@@ -18,7 +18,7 @@
   "description": "This is an application where you can create private note and summerize it.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "author": "Sayantan BHattacharya",
   "license": "ISC"
