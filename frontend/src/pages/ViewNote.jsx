@@ -10,7 +10,7 @@ function ViewNote() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [unlockLoading, setUnlockLoading] = useState(false);
-
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const unlockNote = async () => {
     if (!password.trim()) {
       setError("Please enter password");
@@ -21,10 +21,9 @@ function ViewNote() {
       setError("");
       setUnlockLoading(true);
 
-      const response = await axios.post(
-        `http://localhost:3000/api/notes/${id}`,
-        { password },
-      );
+      const response = await axios.post(`${API_BASE_URL}/api/notes/${id}`, {
+        password,
+      });
 
       setNote(response.data.data.text);
     } catch (err) {
@@ -40,7 +39,7 @@ function ViewNote() {
       setError("");
 
       const response = await axios.post(
-        `http://localhost:3000/api/notes/${id}/summarize`,
+        `${API_BASE_URL}/api/notes/${id}/summarize`,
       );
 
       setSummary(response.data.data.summary);
