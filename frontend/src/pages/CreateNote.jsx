@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { FiCopy } from "react-icons/fi";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 const CreateNote = () => {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [copiedUrl, setCopiedUrl] = useState(false);
-  const [copiedPassword, setCopiedPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
 
   const handleSubmit = async () => {
     if (!text.trim()) {
@@ -16,41 +19,45 @@ const CreateNote = () => {
     }
 
     try {
+      setLoading(true);
       setError("");
       setResult(null);
 
-      const response = await axios.post("http://localhost:3000/api/notes", {
+      const { data } = await axios.post(`${API_BASE_URL}/api/notes`, {
         text,
       });
 
-      const noteId = response.data.data._id;
+      // assuming backend returns:
+      // { success: true, data: { _id, password } }
+
+      const noteId = data.data._id;
 
       setResult({
-        url: `http://localhost:5173/notes/${noteId}`, // FRONTEND URL
-        password: response.data.data.password,
+        url: `${FRONTEND_URL}/notes/${noteId}`,
+        password: data.data.password,
       });
 
       setText("");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(
+        err.response?.data?.message ||
+          "Failed to create note. Please try again.",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const copyToClipboard = async (text, type) => {
+  const copyToClipboard = async (value, type) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(value);
+      setCopiedField(type);
 
-      if (type === "url") {
-        setCopiedUrl(true);
-        setTimeout(() => setCopiedUrl(false), 2000);
-      }
-
-      if (type === "password") {
-        setCopiedPassword(true);
-        setTimeout(() => setCopiedPassword(false), 2000);
-      }
-    } catch (err) {
-      console.error("Copy failed", err);
+      setTimeout(() => {
+        setCopiedField(null);
+      }, 2000);
+    } catch (error) {
+      console.error("Clipboard copy failed:", error);
     }
   };
 
@@ -62,7 +69,7 @@ const CreateNote = () => {
         </h1>
 
         <textarea
-          className="w-full border rounded p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full border rounded p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           rows="4"
           placeholder="Enter your note..."
           value={text}
@@ -71,14 +78,16 @@ const CreateNote = () => {
 
         <button
           onClick={handleSubmit}
-          className="w-full py-2 rounded-lg text-white font-semibold 
-             bg-linear-to-r from-blue-500 via-indigo-500 to-purple-600
-             shadow-md hover:shadow-lg
-             hover:from-blue-600 hover:via-indigo-600 hover:to-purple-700
-             transition-all duration-300
-             active:scale-95"
+          disabled={loading}
+          className={`w-full py-2 rounded-lg text-white font-semibold
+            bg-linear-to-r from-blue-500 via-indigo-500 to-purple-600
+            hover:from-blue-600 hover:via-indigo-600 hover:to-purple-700
+            transition-all duration-300
+            shadow-md hover:shadow-lg
+            active:scale-95
+            ${loading && "opacity-70 cursor-not-allowed"}`}
         >
-          Create Note
+          {loading ? "Creating..." : "Create Note"}
         </button>
 
         {error && (
@@ -87,7 +96,7 @@ const CreateNote = () => {
 
         {result && (
           <div className="mt-4 bg-gray-50 p-4 rounded space-y-4">
-            {/* URL Section */}
+            {/* URL */}
             <div>
               <p className="text-sm font-semibold mb-1">Share URL:</p>
               <div className="relative flex items-center justify-between bg-white border rounded px-3 py-2">
@@ -97,16 +106,12 @@ const CreateNote = () => {
 
                 <button
                   onClick={() => copyToClipboard(result.url, "url")}
-                  className="ml-2 p-2 rounded-md bg-blue-500 text-white 
-                     hover:bg-blue-600 transition-all duration-200 active:scale-95 relative"
+                  className="relative ml-2 p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 active:scale-95"
                 >
                   <FiCopy className="w-4 h-4" />
 
-                  {copiedUrl && (
-                    <span
-                      className="absolute -top-8 right-0 bg-black text-white 
-                             text-xs px-2 py-1 rounded shadow-md animate-fade"
-                    >
+                  {copiedField === "url" && (
+                    <span className="absolute -top-8 right-0 bg-black text-white text-xs px-2 py-1 rounded shadow-md">
                       Copied!
                     </span>
                   )}
@@ -114,7 +119,7 @@ const CreateNote = () => {
               </div>
             </div>
 
-            {/* Password Section */}
+            {/* Password */}
             <div>
               <p className="text-sm font-semibold mb-1">Password:</p>
               <div className="relative flex items-center justify-between bg-white border rounded px-3 py-2">
@@ -122,16 +127,12 @@ const CreateNote = () => {
 
                 <button
                   onClick={() => copyToClipboard(result.password, "password")}
-                  className="ml-2 p-2 rounded-md bg-green-500 text-white 
-                     hover:bg-green-600 transition-all duration-200 active:scale-95 relative"
+                  className="relative ml-2 p-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition-all duration-200 active:scale-95"
                 >
                   <FiCopy className="w-4 h-4" />
 
-                  {copiedPassword && (
-                    <span
-                      className="absolute -top-8 right-0 bg-black text-white 
-                             text-xs px-2 py-1 rounded shadow-md animate-fade"
-                    >
+                  {copiedField === "password" && (
+                    <span className="absolute -top-8 right-0 bg-black text-white text-xs px-2 py-1 rounded shadow-md">
                       Copied!
                     </span>
                   )}
