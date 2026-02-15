@@ -10,7 +10,17 @@ function ViewNote() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [unlockLoading, setUnlockLoading] = useState(false);
+  console.log("API_BASE_URL:", API_BASE_URL);
 
+  if (!API_BASE_URL) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+        <div className="bg-red-100 p-4 rounded">
+          <p className="text-red-700">Configuration Error: API URL not set</p>
+        </div>
+      </div>
+    );
+  }
   const unlockNote = async () => {
     if (!password.trim()) {
       setError("Please enter password");
