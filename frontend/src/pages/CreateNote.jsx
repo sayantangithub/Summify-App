@@ -33,7 +33,7 @@ const CreateNote = () => {
       const noteId = data.data._id;
 
       setResult({
-        url: `${API_BASE_URL}/api//notes/${noteId}`,
+        url: `${API_BASE_URL}/api/notes/${noteId}`,
         password: data.data.password,
       });
 
