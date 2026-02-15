@@ -34,7 +34,7 @@ const CreateNote = () => {
       const noteId = data.data._id;
 
       setResult({
-        url: `${FRONTEND_URL}/notes/${noteId}`,
+        url: `${API_BASE_URL}/api//notes/${noteId}`,
         password: data.data.password,
       });
 
