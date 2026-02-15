@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://summify-app.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 function ViewNote() {
   const { id } = useParams();
   const [password, setPassword] = useState("");
@@ -21,7 +20,6 @@ function ViewNote() {
     try {
       setError("");
       setUnlockLoading(true);
-      console.log("API_BASE_URL:", API_BASE_URL);
 
       const response = await axios.post(`${API_BASE_URL}/api/notes/${id}`, {
         password,
