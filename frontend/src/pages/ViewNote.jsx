@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://summify-app.onrender.com";
 function ViewNote() {
   const { id } = useParams();
   const [password, setPassword] = useState("");
@@ -13,30 +12,16 @@ function ViewNote() {
   const [loading, setLoading] = useState(false);
   const [unlockLoading, setUnlockLoading] = useState(false);
 
-  // Debug: Check if API_BASE_URL is loaded
-  React.useEffect(() => {
-    console.log("API_BASE_URL:", API_BASE_URL);
-    if (!API_BASE_URL) {
-      setError("Configuration error: API URL not set. Please contact support.");
-    }
-  }, []);
-
   const unlockNote = async () => {
     if (!password.trim()) {
       setError("Please enter password");
       return;
     }
 
-    if (!API_BASE_URL) {
-      setError("API configuration error");
-      return;
-    }
-
     try {
       setError("");
       setUnlockLoading(true);
-
-      console.log("Calling API:", `${API_BASE_URL}/api/notes/${id}`);
+      console.log("API_BASE_URL:", API_BASE_URL);
 
       const response = await axios.post(`${API_BASE_URL}/api/notes/${id}`, {
         password,
@@ -44,7 +29,6 @@ function ViewNote() {
 
       setNote(response.data.data.text);
     } catch (err) {
-      console.error("Unlock error:", err);
       setError(err.response?.data?.message || "Invalid password");
     } finally {
       setUnlockLoading(false);
@@ -52,11 +36,6 @@ function ViewNote() {
   };
 
   const summarizeNote = async () => {
-    if (!API_BASE_URL) {
-      setError("API configuration error");
-      return;
-    }
-
     try {
       setLoading(true);
       setError("");
@@ -67,7 +46,7 @@ function ViewNote() {
 
       setSummary(response.data.data.summary);
     } catch (err) {
-      console.error("Summarize error:", err);
+      console.log(err);
       setError("Failed to summarize");
     } finally {
       setLoading(false);
@@ -87,12 +66,11 @@ function ViewNote() {
               className="w-full border p-2 rounded mb-3"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && unlockNote()}
             />
 
             <button
               onClick={unlockNote}
-              disabled={unlockLoading || !API_BASE_URL}
+              disabled={unlockLoading}
               className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 disabled:bg-gray-400"
             >
               {unlockLoading ? "Unlocking..." : "Unlock"}
@@ -112,7 +90,7 @@ function ViewNote() {
 
             <button
               onClick={summarizeNote}
-              disabled={loading || !API_BASE_URL}
+              disabled={loading}
               className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600 disabled:bg-gray-400"
             >
               {loading ? "Generating..." : "Summarize this note"}
