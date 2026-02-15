@@ -29,7 +29,6 @@ const CreateNote = () => {
       });
 
       // assuming backend returns:
-      // { success: true, data: { _id, password } }
 
       const noteId = data.data._id;
 
